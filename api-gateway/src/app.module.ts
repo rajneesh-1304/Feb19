@@ -33,7 +33,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         name: ORDER_SERVICE_RABBITMQ,
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://guest:guest@localhost:5672'],
+          urls: ['amqp://guest:guest@rabbitmq:5672'],
           exchange: 'orders_exchange',
           exchangeType: 'fanout',
         },
