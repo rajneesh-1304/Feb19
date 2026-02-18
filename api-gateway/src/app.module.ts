@@ -1,10 +1,8 @@
 import { Module, Controller, Get } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppService } from './app.service';
 import { Outbox } from './outbox/outbox.entity';
-import { ORDER_SERVICE_RABBITMQ } from './constants';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 
@@ -28,17 +26,6 @@ import { ScheduleModule } from '@nestjs/schedule';
         autoLoadEntities: true,
       }),
     }),
-    ClientsModule.register([
-      {
-        name: ORDER_SERVICE_RABBITMQ,
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://guest:guest@rabbitmq:5672'],
-          exchange: 'orders_exchange',
-          exchangeType: 'fanout',
-        },
-      },
-    ]),
   ],
   controllers: [AppController],
   providers: [AppService],
