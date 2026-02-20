@@ -1,10 +1,9 @@
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { Inbox } from './inbox/inbox.entity';
 
 dotenv.config();
-
-export const AppDataSource = new DataSource({
+const rawDataSourceOptions = {
   type: 'postgres',
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
@@ -15,6 +14,9 @@ export const AppDataSource = new DataSource({
   logging: true,
   entities: [Inbox],
   migrations: ['dist/migrations/*.js'],
-});
+}
 
-export default AppDataSource;
+export const dataSourceOptions = rawDataSourceOptions as DataSourceOptions;
+
+const dataSource = new DataSource(dataSourceOptions);
+export default dataSource;
