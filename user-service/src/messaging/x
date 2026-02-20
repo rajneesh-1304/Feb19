@@ -10,7 +10,7 @@ export class ConsumerService {
     private readonly rabbit: RabbitConnection,
     @InjectRepository(Inbox)
     private readonly inboxRepo: Repository<Inbox>,
-  ) { }
+  ) {}
 
   async consume() {
     const conn = await this.rabbit.connect(process.env.RABBITMQ_URL);
@@ -20,13 +20,19 @@ export class ConsumerService {
       durable: true,
     });
 
-    const mainQueue = await channel.assertQueue('orders.queue', { durable: true });
+    const mainQueue = await channel.assertQueue('orders.queue', {
+      durable: true,
+    });
 
     const retryQueue = await channel.assertQueue('orders.retry.queue', {
       durable: true,
-    })
+    });
 
-    await channel.bindQueue(retryQueue.queue, 'orders.retry.exchange', 'routingKey');
+    await channel.bindQueue(
+      retryQueue.queue,
+      'orders.retry.exchange',
+      'routingKey',
+    );
 
     channel.consume(mainQueue.queue, async (msg) => {
       if (!msg) return;
@@ -45,21 +51,26 @@ export class ConsumerService {
 
         let retryCount = 0;
         let success = false;
+
         while (retryCount < 5) {
           try {
-            throw "this is error";
+            throw "this is error"; // simulate failure
+
             const inboxMessage = this.inboxRepo.create({
               messageId: message.messageId,
               handler: 'Default',
             });
 
             await this.inboxRepo.save(inboxMessage);
+
             success = true;
             break;
           } catch (error) {
             retryCount++;
           }
         }
+
+        // ✅ If failed after 5 attempts → send to retry queue
         if (!success) {
           channel.publish(
             'orders.retry.exchange',
@@ -67,18 +78,16 @@ export class ConsumerService {
             Buffer.from(JSON.stringify(message)),
             { persistent: true },
           );
-
-          const retryQueue = await channel.assertQueue('orders.retry.queue', {
-            durable: true,
-          })
-
-          await channel.bindQueue(retryQueue.queue, 'orders.retry.exchange', 'routingKey');
-          console.log('I am done ')
         }
+
+        // ✅ Always ACK original message
         channel.ack(msg);
+
       } catch (err) {
         console.error('Consumer error:', err);
-        channel.nack(msg, false, true);
+
+        // ❌ DO NOT requeue
+        channel.nack(msg, false, false);
       }
     });
   }
