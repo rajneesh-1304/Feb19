@@ -1,5 +1,5 @@
 import { Command, CommandRunner, Option } from 'nest-commander';
-import { ConsumerService } from 'src/messaging/consumer.service';
+import { ConsumerService } from '../messaging/consumer.service';
 
 @Command({ name: 'sayHello', options: { isDefault: true } })
 export class PublishCommand extends CommandRunner {
@@ -12,8 +12,6 @@ export class PublishCommand extends CommandRunner {
 
 
   async run(inputs: string[], options?: Record<string, any>): Promise<void> {
-
-    
     await this.consumer.consume();
   }
 }

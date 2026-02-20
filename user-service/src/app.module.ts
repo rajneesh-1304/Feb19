@@ -4,31 +4,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { MessagingModule } from './messaging/messaging.module';
+import  AppDataSource  from './data-source'; 
+import { RabbitConnection } from './messaging/rabbit.connection';
+import { ConsumerService } from './messaging/consumer.service';
 import { Inbox } from './inbox/inbox.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get<string>('DB_HOST'),
-        port: Number(config.get<number>('DB_PORT')),
-        username: config.get<string>('DB_USER'),
-        password: config.get<string>('DB_PASS'),
-        database: config.get<string>('DB_NAME'),
-        synchronize: false,
-        logging: true,
-        entities: [Inbox],
-        autoLoadEntities: true,
-      }),
+    TypeOrmModule.forRoot({
+      ...AppDataSource.options, 
     }),
+    TypeOrmModule.forFeature([Inbox]),
     MessagingModule,
-
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ConsumerService, RabbitConnection],
 })
 export class AppModule {}

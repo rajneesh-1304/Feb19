@@ -3,16 +3,12 @@ import { AppModule } from "../app.module";
 import { ConsumerService } from "../messaging/consumer.service";
 import { CommandFactory } from "nest-commander";
 import { Command } from "./command.module";
+import { DataSource } from "typeorm";
 
 async function bootstrap() {
 
-  await CommandFactory.run(Command, {
+  await CommandFactory.runWithoutClosing(Command, {
     logger: ['warn', 'error'],
   });
-  // const app = await NestFactory.createApplicationContext(AppModule);
-
-  // const consumer = app.get(ConsumerService);
-  // await consumer.consume();
-  // await app.close();
 }
 bootstrap();

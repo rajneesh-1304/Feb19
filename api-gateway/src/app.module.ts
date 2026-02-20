@@ -5,7 +5,7 @@ import { AppController } from './app.controller';
 import { OutboxModule } from './services/outbox.module';
 import { PublisherService } from './messaging/publisher.service';
 import { RabbitConnection } from './messaging/rabbit.connection';
-import { AppDataSource } from './data-source'; 
+import  AppDataSource  from './data-source'; 
 
 @Module({
   imports: [
